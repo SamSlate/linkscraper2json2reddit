@@ -59,11 +59,11 @@ function getAnchorEl(body){
 function checkLinks(linkArray, name){
 	console.log(name, "checkLinks()", "runtime: ", (new Date().getTime() - runtime)/1000);
 
+
 	// console.log(process._getActiveHandles());
 	// console.log(process._getActiveRequests());
 
-	//fs.readFile('json/'+name+'.json', 'utf8', function readFileCallback(err, data){
-	
+	// fs.readFile('json/'+name+'.json', 'utf8', function readFileCallback(err, data){
 	// try {
 	// 	var data = fs.readFileSync('json/'+name+'.json', 'utf8');
 	// 	compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
@@ -72,6 +72,8 @@ function checkLinks(linkArray, name){
 	// 	compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 	// }
 	// return;
+
+
 	var readSpeed = new Date().getTime();
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
@@ -92,7 +94,7 @@ function checkLinks(linkArray, name){
 }
 function compareAndAdd(arrNew, arrOld, name){	
 	console.log(name, "compareAndAdd()");
-	//console.log("compareAndAdd()", name, arrNew, arrOld);
+	// console.log("compareAndAdd()", name, arrNew, arrOld);
 	if(!arrOld) var arrOld = [];
 	if(!arrNew) var arrNew = [];
 	
@@ -112,7 +114,7 @@ function compareAndAdd(arrNew, arrOld, name){
 	// console.log(name, "arrOld.length: ", arrOld.length, rArr.length);
 
 	console.log(name, rArr.length, "new!");
-	//postNewJobs(rArr);
+	// postNewJobs(rArr);
 
 	//update existing array;
 	if(rArr.length > 0){
