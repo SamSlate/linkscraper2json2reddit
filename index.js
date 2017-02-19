@@ -79,7 +79,7 @@ function checkLinks(linkArray, name){
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
 		if(err && err.errno != -4058) throw err;
 		if(err && err.errno == -4058){
-			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
+			//file DNE
 			console.log(name+'.json', "is NEW .json");
 			compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 		}
@@ -107,7 +107,8 @@ function compareAndAdd(arrNew, arrOld, name){
 		if(--kill > 0){
 			arrOld.push(value);
 			return true;
-		}else return false;
+		}
+		else return false;
 	}
 	// console.log(name, "arrOld.length: ", arrOld.length);
 	var rArr = arrNew.filter(hasDup);
@@ -126,7 +127,6 @@ function compareAndAdd(arrNew, arrOld, name){
 
 		//write sync
 		// console.log(fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld})));
-
 	}
 	else{
 		console.log("  "+name, "no changes, nothing to update");
