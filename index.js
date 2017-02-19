@@ -75,9 +75,6 @@ function checkLinks(linkArray, name){
 	var readSpeed = new Date().getTime();
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
-
-		console.log("readSpeed: ", (new Date().getTime() - readSpeed)/1000);
-
 		if(err && err.errno != -4058) throw err;
 		if(err && err.errno == -4058){
 			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
@@ -89,6 +86,7 @@ function checkLinks(linkArray, name){
 			console.log(name+'.json', " EXISTS");
 			compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
 		}
+		console.log("  readSpeed: ", (new Date().getTime() - readSpeed)/1000);
 	});
 	return;
 }
