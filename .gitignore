@@ -4,3 +4,4 @@ node_modules/
 desktop.ini
 !package.json
 !urls.json
+!Addisons.json
