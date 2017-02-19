@@ -1,13 +1,14 @@
 {
   "name": "link_scraper",
   "version": "1.0.0",
-  "description": "scrapes links from pages and generates an rss page",
+  "description": "scrape pages -> compare/update json -> post to reddit",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "rss",
+    "json",
+    "reddit",
     "scrapper"
   ],
   "author": "",

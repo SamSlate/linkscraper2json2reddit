@@ -113,7 +113,7 @@ function compareAndAdd(arrNew, arrOld, name){
 	var rArr = arrNew.filter(hasDup);
 	// console.log(name, "arrOld.length: ", arrOld.length, rArr.length);
 
-	console.log(name, rArr.length, "new!");
+	console.log("  "+name, rArr.length, "new!");
 	// postNewJobs(rArr);
 
 	//update existing array;
