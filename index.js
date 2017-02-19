@@ -5,9 +5,7 @@ var request = require('request');
 var jsdom = require('jsdom');
 var snoowrap = require('snoowrap');
 var fs = require('fs');
-
-
-//https://www.npmjs.com/package/snoowrap
+// process.env.UV_THREADPOOL_SIZE=16;
 
 //fs.readFile('json/snoowrap.json', 'utf8', function readFileCallback(err, data){
 var snooConfig = JSON.parse(fs.readFileSync('config/snoowrap.json', 'utf8'));
@@ -53,6 +51,7 @@ function getAnchorEl(body){
 				target: el.target
 			});
 		}, this);
+		window.close();
 	return linkArray;
 }
 function checkLinks(linkArray, name){
@@ -78,11 +77,12 @@ function checkLinks(linkArray, name){
 		if(err && err.errno == -4058){
 			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
 			console.log(name+'.json', " is NEW .json");
-			compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
+			//compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 		}
 		else{
 			//file EXISTS
-			compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
+			console.log(name+'.json', " EXISTS");
+			//compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
 		}
 	});
 	return;
