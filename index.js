@@ -72,17 +72,17 @@ function checkLinks(linkArray, name){
 	// return;
 
 	//too async for this world
-	fs.readFile('json/'+name+'.json', 'utf8', function readFileCallback(err, data){
+	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
 		if(err && err.errno != -4058) throw err;
 		if(err && err.errno == -4058){
 			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
 			console.log(name+'.json', " is NEW .json");
-			//compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
+			compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 		}
 		else{
 			//file EXISTS
 			console.log(name+'.json', " EXISTS");
-			//compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
+			compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
 		}
 	});
 	return;
