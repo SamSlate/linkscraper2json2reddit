@@ -78,12 +78,12 @@ function checkLinks(linkArray, name){
 		if(err && err.errno != -4058) throw err;
 		if(err && err.errno == -4058){
 			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
-			console.log(name+'.json', " is NEW .json");
+			console.log(name+'.json', "is NEW .json");
 			compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 		}
 		else{
 			//file EXISTS
-			console.log(name+'.json', " EXISTS");
+			console.log(name+'.json', "EXISTS");
 			compareAndAdd(linkArray, JSON.parse(data).linkArray, name);
 		}
 		console.log("  readSpeed: ", (new Date().getTime() - readSpeed)/1000);
