@@ -7,12 +7,14 @@ var snoowrap = require('snoowrap');
 var fs = require('fs');
 // process.env.UV_THREADPOOL_SIZE=16;
 
-//fs.readFile('json/snoowrap.json', 'utf8', function readFileCallback(err, data){
 var snooConfig = JSON.parse(fs.readFileSync('config/snoowrap.json', 'utf8'));
 var r = new snoowrap(snooConfig);
 
 //url list
 var urls = JSON.parse(fs.readFileSync('config/urls.json', 'utf8'));
+
+//clock
+var runtime = new Date().getTime();
 
 //list urls
 for(var n in urls){
@@ -55,7 +57,7 @@ function getAnchorEl(body){
 	return linkArray;
 }
 function checkLinks(linkArray, name){
-	console.log(name, "checkLinks()");
+	console.log(name, "checkLinks()", "runtime: ", (new Date().getTime() - runtime)/1000);
 
 	// console.log(process._getActiveHandles());
 	// console.log(process._getActiveRequests());
@@ -70,9 +72,12 @@ function checkLinks(linkArray, name){
 	// 	compareAndAdd(linkArray, {linkArray: []}.linkArray, name);
 	// }
 	// return;
-
+	var readSpeed = new Date().getTime();
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
+
+		console.log("readSpeed: ", (new Date().getTime() - readSpeed)/1000);
+
 		if(err && err.errno != -4058) throw err;
 		if(err && err.errno == -4058){
 			//fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: []}), 'utf8', newFile());
@@ -116,13 +121,17 @@ function compareAndAdd(arrNew, arrOld, name){
 		fs.writeFile('json/'+name+'.json', JSON.stringify({linkArray: arrOld}), function (err) {
 			if (err) return console.log(err);
 			console.log("  "+name+'.json UPDATED');
+			console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
 		});
 
 		//write sync
 		// console.log(fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld})));
 
 	}
-	else console.log("  "+name, "no changes, nothing to update");
+	else{
+		console.log("  "+name, "no changes, nothing to update");
+		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
+	} 
 	return;
 }
 
