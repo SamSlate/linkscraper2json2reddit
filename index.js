@@ -84,7 +84,7 @@ function compareAndAdd(url, arrOld, name){
         
         //update existing array;
         if(rArr.length > 0){
-            postNewJobs(rArr);
+            // postNewJobs(rArr);
 	        var readSpeed = new Date().getTime();   
             fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld}));
             // function (err) {
