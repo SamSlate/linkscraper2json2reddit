@@ -22,7 +22,7 @@ var count = Object.keys(urls).length;
 
 //list urls
 for(var n in urls){
-	// if(n == "CBP") getJson(n, urls[n]);	
+	// if(n == "Mills Oakley") getJson(n, urls[n]);	
 	getJson(n, urls[n]);	
 }
 
@@ -49,14 +49,60 @@ function getJson(name, url){
 	});
 	return;
 }
+//pull domain
+function extractDomain(url) {
+    var domain;
+    //find & remove protocol (http, ftp, etc.) and get domain
+    if (url.indexOf("://") > -1) domain = url.split('/')[2];
+    else domain = url.split('/')[0];
+	//find & remove port number
+    domain = domain.split(':')[0];
+	domain = (url[4]=='s')?"https://":"http://"+domain;
+    return domain;
+}
+//get page	
+function getPage(url, arrOld, name){
+    var readSpeed = new Date().getTime();
+	request(url, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			console.log(name, response.statusCode);
+            console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
+			//console.log(body) // Show the HTML for the Google homepage.
+			compare(name, getAnchorEl(body, url), arrOld);
+		}
+		else console.log(name, error, response); //POST THIS TO PAGE
+	});
+    return;
+}
+//get links
+function getAnchorEl(body, url){
+	// console.log("getAnchorEl()");
+	var jsdom = require("jsdom").jsdom;
+	var document = jsdom(body, undefined);
+	var window = document.defaultView;
 
+	var linkArray = [];
+	var a = document.querySelectorAll('a');
+		a.forEach(function(el) {
+			//console.log(el.textContent);
+			if(el.href[0] == '/') el.href = extractDomain(url) + el.href;
+			linkArray.push({
+				href: el.href,
+				class: el.className,
+				text: el.textContent.replace(/[^a-zA-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
+				target: el.target
+			});
+		}, this);
+		window.close();
+	return linkArray;
+}
+//compare links
 function compare(name, arrNew, arrOld){
 	
 	if(!arrOld) console.log(name, "no old array!");
 	if(!arrOld) var arrOld = [];
 	if(!arrNew) var arrNew = [];
 		
-	console.log(name, "compare()", arrOld.length);
 
 	//compare and remove dups
 	var kill = 9;
@@ -74,79 +120,28 @@ function compare(name, arrNew, arrOld){
 		}
 		else return false;
 	}
-	// console.log(name, "arrOld.length: ", arrOld.length);
-	var rArr = arrNew.filter(hasDup);
-	// console.log(name, "arrOld.length: ", arrOld.length, rArr.length);
 
-	console.log("  "+name, rArr.length, "new! (", arrOld.length, "total)");
+	var rArr = arrNew.filter(hasDup);
+	console.log(name, "compare()\n  ", arrNew.length, "links found, ", rArr.length, "new! (", arrOld.length, "total )");
 	
 	//update existing array;
 	if(rArr.length > 0){
-		// postNewJobs(rArr);
 		var readSpeed = new Date().getTime();   
 		fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld}));
-		// function (err) {
-			console.log("  writeSpeed: ", (new Date().getTime() - readSpeed)/1000);
-			//if (err) return console.log(err);
-			console.log("  "+name+'.json UPDATED');
-			console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
-		// });
-
-		//write sync
-		// console.log(fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld})));
+			console.log(name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
 	}
 	else{
-		console.log("  "+name, "no changes, nothing to update");
+		console.log(name, "no changes, nothing to update");
 		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
 	}
-	console.log(name, count, redditPostArray.length);
+	console.log(count+" open calls, "+redditPostArray.length+" new posts");
 
 	count--;
-	if(count==0){ //conclude program
-		//post array to reddit
-		// console.log(redditPostArray);
+	if(count==0){ //post array to reddit
 		postNewJobs(redditPostArray);
 	}
 	return;
 }
-//get page	
-function getPage(url, arrOld, name){
-    var readSpeed = new Date().getTime();
-	request(url, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log(name, response.statusCode);
-            console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
-			//console.log(body) // Show the HTML for the Google homepage.
-			compare(name, getAnchorEl(body), arrOld);
-		}
-		else console.log(name, error, response); //POST THIS TO PAGE
-	});
-    return;
-}
-
-//get links
-function getAnchorEl(body){
-	// console.log("getAnchorEl()");
-	var jsdom = require("jsdom").jsdom;
-	var document = jsdom(body, undefined);
-	var window = document.defaultView;
-
-	var linkArray = [];
-	var a = document.querySelectorAll('a');
-		a.forEach(function(el) {
-			//console.log(el.textContent);
-			if(el.href[0] == '/') el.href = document.domain + el.href;
-			linkArray.push({
-				href: el.href,
-				class: el.className,
-				text: el.textContent.replace(/[^a-zA-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
-				target: el.target
-			});
-		}, this);
-		window.close();
-	return linkArray;
-}
-
 //post to reddit:
 function postNewJobs(arr){
 	if(!arr) return;   
@@ -156,7 +151,7 @@ function postNewJobs(arr){
 		var title = "["+name+"] "+arr[i].value.text;
 		var url = arr[i].value.href;
 
-		if(title == undefined || (title.length-name.length) < 5 || url[0] != 'h'){
+		if(title == undefined || (title.length-name.length) < 5 || !(url[0] == 'h' || url[0] == 'w')){
             console.log("post rejected: ", title, url);
         }
 		else{
@@ -167,5 +162,6 @@ function postNewJobs(arr){
 			// });
 		}
     }
+	console.log("runtime: ", (new Date().getTime() - runtime)/1000);
 	return;
 }
