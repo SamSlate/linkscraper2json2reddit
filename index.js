@@ -126,7 +126,7 @@ function compare(jsonNew, jsonOld){
 	}
 
 	var rArr = jsonNew.linkArray.filter(hasDup);
-	console.log(jsonOld.name, "compare()\n  ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
+	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
 	//update existing array;
 	if(rArr.length > 0){
