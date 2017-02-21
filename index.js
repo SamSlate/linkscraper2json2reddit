@@ -39,7 +39,7 @@ function sleep (time) {
 }
 //get json files
 function getJson(name, url){
-	console.log(name, "getJson()", "runtime: ", (new Date().getTime() - runtime)/1000);
+	// console.log(name, "getJson()", "runtime: ", (new Date().getTime() - runtime)/1000);
 
 	var readSpeed = new Date().getTime();
 	//too async for this world
