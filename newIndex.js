@@ -4,23 +4,30 @@ const request  = bluebird.promisify(require('request'));
 const cheerio  = require('cheerio');
 const hash     = require('string-hash');
 const urls     = _.toPairs(require('./config/urls'));
+const fs 			 = require('fs');
 
-bluebird.map(urls, function getJson([name, url]) {
+//clock
+var runtime = new Date().getTime();
+
+//map
+bluebird.map(urls, function getJson([name, url]) {  //
+  console.log(name, url);
   let json = _.attempt(require, `./json/${name}`);
   if (_.isError(json)) {
     json = {name, url,  hash: null, linkArray: []};
   }
-
   return json;
-
 })
-.then(allJsonObjects => {
-  
+.then(allJsonObjects => { 
+  //console.log(allJsonObjects[0].hash);
   return bluebird.map(allJsonObjects, function getPage(jsonData) {
     let newJsonData = _.cloneDeep(jsonData);
-
+		
+		var requestSpeed = new Date().getTime();
     return request(jsonData.url)
     .then(response => {
+			console.log(jsonData.name, "requestSpeed:", (new Date().getTime() - requestSpeed)/1000);
+
       const $ = cheerio.load(response.body);
       const links = $('a');
       newJsonData.linkArray = _.map(links, link => {
@@ -28,18 +35,19 @@ bluebird.map(urls, function getJson([name, url]) {
           href: _.get(link, 'attribs.href'),
           class: _.get(link, 'attribs.class'),
           //TODO: didnt know what cheerios equivalent of textContent was
-          text: _.get(link, 'html', '').replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
+          text: _.get(link, 'text', '').replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
           target: _.get(link, 'attribs.taget')
         };
       });
-			newJsonData = hash(response.body);
-      let newLinks = getNewLinks(newJsonData.linkArray, jsonData.linkArray);
+			newJsonData.hash = hash(response.body); 
 
-      if (newLinks.length) {
+			let newLinks = getNewLinks(newJsonData.linkArray, jsonData.linkArray);
+			console.log(jsonData.name, newLinks.length, "links found! rt:", (new Date().getTime() - runtime)/1000);
+      if (newLinks.length > 0) {
         jsonData.hash = newJsonData.hash; //new content => new hash
         fs.writeFileSync(`json/${jsonData.name}.json`, JSON.stringify(jsonData));
+      	console.log(jsonData.name, "write, rt:", (new Date().getTime() - runtime)/1000);
       }
-
       return _.map(newLinks, newLink => {
         return {
           name: jsonData.name,
@@ -47,21 +55,19 @@ bluebird.map(urls, function getJson([name, url]) {
         };
       });
     });
-  });
-  
+  })
+	.then(() => {console.log("runtime:", (new Date().getTime() - runtime)/1000);});
 })
 .then(_.flatten)
-.then(allNewRedditLinks => {
-  console.log('allNewRedditLinks.length', allNewRedditLinks.length);
-  //TODO: post these bad boys up to reddit
-})
-.catch(err => {
-  console.log('err', err);
-})
-
+	.then(allNewRedditLinks => {
+		console.log('allNewRedditLinks.length', allNewRedditLinks.length); // returns []
+		//TODO: post these bad boys up to reddit
+	})
+	.catch(err => {
+		console.log('err', err);
+	})
 
 function getNewLinks(allLinks, oldLinks) {
-
   return _.filter(allLinks, isNewLink);
 	
   //TODO: could clean this up further, but didn't want to think about it
@@ -79,5 +85,4 @@ function getNewLinks(allLinks, oldLinks) {
 		}
 		return true; 
 	}
-
 }

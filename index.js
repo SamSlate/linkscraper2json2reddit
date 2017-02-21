@@ -29,7 +29,7 @@ var i = 0;
 for(var n in urls){
 	// if(n == "Mills Oakley") getJson(n, urls[n]);	
 	// getJson(n, urls[n]);
-	sleep(500*i++).then((() => {
+	sleep(250*i++).then((() => {
 		getJson(n, urls[n]);	
 	})(i));
 }
@@ -39,7 +39,7 @@ function sleep (time) {
 }
 //get json files
 function getJson(name, url){
-	// console.log(name, "getJson()", "runtime: ", (new Date().getTime() - runtime)/1000);
+	console.log(name, "getJson()", "runtime: ", (new Date().getTime() - runtime)/1000);
 
 	var readSpeed = new Date().getTime();
 	//too async for this world
@@ -66,22 +66,24 @@ function getJson(name, url){
 }
 //get page	
 function getPage(jsonObj){
+	console.log(jsonObj.name, "getPage()");
     var readSpeed = new Date().getTime();
 	var config = {
 		url: jsonObj.url,
 		done: function (err, window) {
+			console.log(jsonObj.name, "getPage()");
+			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 			var jsonNew = Object.assign({}, jsonObj);
 				jsonNew.linkArray = [];
 			if (err) { //error
 				console.log(err);
-				console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 				compare(jsonNew, jsonObj);
 				return;
 			}			
 			var newHash = hash(this.html);
 				jsonNew.hash = newHash;				
-			console.log(jsonObj.name, "\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
-			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
+//			console.log(jsonObj.name, "\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
+//			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 
 			var linkArray = [];
 			var a = window.document.querySelectorAll('a');
@@ -102,7 +104,7 @@ function getPage(jsonObj){
 }
 //compare links
 function compare(jsonNew, jsonOld){
-	if(!jsonOld.linkArray) console.log(jsonOld.name, "no old array!");
+//	if(!jsonOld.linkArray) console.log(jsonOld.name, "no old array!");
 
 	//compare and remove dups
 	// var kill = 11;
@@ -126,7 +128,7 @@ function compare(jsonNew, jsonOld){
 	}
 
 	var rArr = jsonNew.linkArray.filter(hasDup);
-	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
+//	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
 	//update existing array;
 	if(rArr.length > 0){
@@ -137,12 +139,12 @@ function compare(jsonNew, jsonOld){
 			// log += jsonOld.name+'.json UPDATED\n  writeSpeed: '+(new Date().getTime() - readSpeed)/1000+"\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	}
 	else{
-		console.log(jsonOld.name, "no changes, nothing to update");
-		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
+//		console.log(jsonOld.name, "no changes, nothing to update");
+//		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
 		// log += jsonOld.name + "no changes, nothing to update\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	}
 	count--;
-	console.log("  "+count+" open calls, "+redditPostArray.length+" new posts");
+//	console.log("  "+count+" open calls, "+redditPostArray.length+" new posts");
 	if(count==0){ //post array to reddit
 		postNewJobs(redditPostArray);
 	}
@@ -158,14 +160,14 @@ function postNewJobs(arr){
 		var url = arr[i].value.href;
 
 		if(title == undefined || (title.length-name.length) < 5 || !(url[0] == 'h' || url[0] == 'w')){
-            console.log("post rejected: ", title, url);
+//            console.log("post rejected: ", title, url);
         }
 		else{
-            console.log("letspost: ["+title+"]("+url+")");
+//           console.log("letspost: ["+title+"]("+url+")");
 			// log += "\nletspost: ["+title+"]("+url+")";
 			
 			if(process.argv[2] == 'r'){
-				console.log(process.argv[2]);
+//				console.log(process.argv[2]);
 				r.getSubreddit('LawJobsSydney').submitLink({
 					title: title,
 					url: url
