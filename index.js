@@ -1,5 +1,8 @@
 console.log("LOG: "+new Date());
 
+//option to post to reddit 'r'?yes:no
+console.log("post to reddit", process.argv[2] == 'r');
+
 //requires
 var jsdom = require('jsdom');
 var snoowrap = require('snoowrap');
@@ -161,10 +164,14 @@ function postNewJobs(arr){
 		else{
             console.log("letspost: ["+title+"]("+url+")");
 			// log += "\nletspost: ["+title+"]("+url+")";
-			r.getSubreddit('LawJobsSydney').submitLink({
-			    title: title,
-			    url: url
-			});
+			
+			if(process.argv[2] == 'r'){
+				console.log(process.argv[2]);
+				r.getSubreddit('LawJobsSydney').submitLink({
+					title: title,
+					url: url
+				});
+			}
 		}
     }
 	console.log("runtime: ", (new Date().getTime() - runtime)/1000);
