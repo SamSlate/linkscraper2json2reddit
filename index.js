@@ -142,7 +142,7 @@ function compare(jsonNew, jsonOld){
 		// log += jsonOld.name + "no changes, nothing to update\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	}
 	count--;
-	console.log(count+" open calls, "+redditPostArray.length+" new posts");
+	console.log("  "+count+" open calls, "+redditPostArray.length+" new posts");
 	if(count==0){ //post array to reddit
 		postNewJobs(redditPostArray);
 	}
