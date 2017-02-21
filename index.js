@@ -1,10 +1,10 @@
-console.log("begin");
+console.log("LOG: "+new Date());
 
 //requires
-var request = require('request');
 var jsdom = require('jsdom');
 var snoowrap = require('snoowrap');
 var fs = require('fs');
+var hash = require("string-hash");
 // process.env.UV_THREADPOOL_SIZE=16;
 
 const snooConfig = JSON.parse(fs.readFileSync('config/snoowrap.json', 'utf8'));
@@ -19,13 +19,22 @@ var runtime = new Date().getTime();
 //
 var redditPostArray = [];
 var count = Object.keys(urls).length;
+var log = "LOG: "+new Date();
 
 //list urls
+var i = 0;
 for(var n in urls){
 	// if(n == "Mills Oakley") getJson(n, urls[n]);	
-	getJson(n, urls[n]);	
+	// getJson(n, urls[n]);
+	sleep(500*i++).then((() => {
+		getJson(n, urls[n]);	
+	})(i));
 }
-
+//sleep
+function sleep (time) {
+	return new Promise((resolve) => setTimeout(resolve, time));
+}
+//get json files
 function getJson(name, url){
 	console.log(name, "getJson()", "runtime: ", (new Date().getTime() - runtime)/1000);
 
@@ -33,110 +42,105 @@ function getJson(name, url){
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
 		if(err && err.errno != -4058){
+			//unknown error
+			console.log(name, err);
 			throw err;
+			getPage({name: name, url: url, hash: null, linkArray: []});
 		}
 		if(err && err.errno == -4058){
 			//file DNE
-			console.log(name+'.json', "is NEW .json");
-			getPage(url, {linkArray: []}.linkArray, name);
+			console.log(name+'.json is NEW .json');
+			getPage({name: name, url: url, hash: null, linkArray: []});
 		}
 		else{
 			//file EXISTS
-			console.log(name+'.json', "EXISTS");
-			getPage(url, JSON.parse(data).linkArray, name);
+			console.log(name+'.json EXISTS');
+			// getPage(url, JSON.parse(data).linkArray, name, JSON.parse(data).hash);
+			getPage(JSON.parse(data));
 		}
 		console.log("  readSpeed: ", (new Date().getTime() - readSpeed)/1000);
 	});
 	return;
 }
-//pull domain
-function extractDomain(url) {
-    var domain;
-    //find & remove protocol (http, ftp, etc.) and get domain
-    if (url.indexOf("://") > -1) domain = url.split('/')[2];
-    else domain = url.split('/')[0];
-	//find & remove port number
-    domain = domain.split(':')[0];
-	domain = (url[4]=='s')?"https://":"http://"+domain;
-    return domain;
-}
 //get page	
-function getPage(url, arrOld, name){
+function getPage(jsonObj){
     var readSpeed = new Date().getTime();
-	request(url, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log(name, response.statusCode);
-            console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
-			//console.log(body) // Show the HTML for the Google homepage.
-			compare(name, getAnchorEl(body, url), arrOld);
-		}
-		else console.log(name, error, response); //POST THIS TO PAGE
-	});
-    return;
-}
-//get links
-function getAnchorEl(body, url){
-	// console.log("getAnchorEl()");
-	var jsdom = require("jsdom").jsdom;
-	var document = jsdom(body, undefined);
-	var window = document.defaultView;
+	var config = {
+		url: jsonObj.url,
+		done: function (err, window) {
+			var jsonNew = Object.assign({}, jsonObj);
+				jsonNew.linkArray = [];
+			if (err) { //error
+				console.log(err);
+				console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
+				compare(jsonNew, jsonObj);
+				return;
+			}			
+			var newHash = hash(this.html);
+				jsonNew.hash = newHash;				
+			console.log(jsonObj.name, "\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
+			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 
-	var linkArray = [];
-	var a = document.querySelectorAll('a');
-		a.forEach(function(el) {
-			//console.log(el.textContent);
-			if(el.href[0] == '/') el.href = extractDomain(url) + el.href;
-			linkArray.push({
-				href: el.href,
-				class: el.className,
-				text: el.textContent.replace(/[^a-zA-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
-				target: el.target
-			});
-		}, this);
-		window.close();
-	return linkArray;
+			var linkArray = [];
+			var a = window.document.querySelectorAll('a');
+				a.forEach(function(el) {
+					linkArray.push({
+						href: el.href,
+						class: el.className,
+						text: el.textContent.replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
+						target: el.target
+					});
+				}, this);
+			jsonNew.linkArray = linkArray;	
+			window.close();
+			compare(jsonNew, jsonObj);
+		}
+	};
+	jsdom.env(config); //go
 }
 //compare links
-function compare(name, arrNew, arrOld){
-	
-	if(!arrOld) console.log(name, "no old array!");
-	if(!arrOld) var arrOld = [];
-	if(!arrNew) var arrNew = [];
-		
+function compare(jsonNew, jsonOld){
+	if(!jsonOld.linkArray) console.log(jsonOld.name, "no old array!");
 
 	//compare and remove dups
-	var kill = 9;
+	// var kill = 11;
 	function hasDup(value) {
-		for (var i = 0; i < arrOld.length; i++)		
-			if(value.href == arrOld[i].href)
-				if(value.text.length <= arrOld[i].text.length) return false;
-		if(--kill > 0){
-			arrOld.push(value);
-			redditPostArray.push({
-				name: name,
-				value: value
-			});
-			return true;
+		// for (var i = 0; i < jsonOld.linkArray.length; i++)	
+		// 	if(value.href == jsonOld.linkArray[i].href)
+		// 		if(value.text.length <= jsonOld.linkArray[i].text.length) return false;
+		for (var i = 0; i < jsonOld.linkArray.length; i++){			
+			if(value.href == jsonOld.linkArray[i].href)
+				if(value.text.length <= jsonOld.linkArray[i].text.length) return false;
+			if(value.text == jsonOld.linkArray[i].text) return false;			
 		}
-		else return false;
+		// if(--kill > 0){
+		jsonOld.linkArray.push(value);
+		redditPostArray.push({
+			name: jsonOld.name,
+			value: value
+		});
+		return true; 
+		// } else return false;
 	}
 
-	var rArr = arrNew.filter(hasDup);
-	console.log(name, "compare()\n  ", arrNew.length, "links found, ", rArr.length, "new! (", arrOld.length, "total )");
+	var rArr = jsonNew.linkArray.filter(hasDup);
+	console.log(jsonOld.name, "compare()\n  ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
 	//update existing array;
 	if(rArr.length > 0){
-		var readSpeed = new Date().getTime();   
-		fs.writeFileSync('json/'+name+'.json', JSON.stringify({linkArray: arrOld}));
-			console.log(name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
+		jsonOld.hash = jsonNew.hash; //new content => new hash
+		var readSpeed = new Date().getTime();
+		fs.writeFileSync('json/'+jsonOld.name+'.json', JSON.stringify(jsonOld));
+			console.log(jsonOld.name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
+			// log += jsonOld.name+'.json UPDATED\n  writeSpeed: '+(new Date().getTime() - readSpeed)/1000+"\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	}
 	else{
-		console.log(name, "no changes, nothing to update");
+		console.log(jsonOld.name, "no changes, nothing to update");
 		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
+		// log += jsonOld.name + "no changes, nothing to update\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	}
-	console.log(count+" open calls, "+redditPostArray.length+" new posts");
-
 	count--;
+	console.log(count+" open calls, "+redditPostArray.length+" new posts");
 	if(count==0){ //post array to reddit
 		postNewJobs(redditPostArray);
 	}
@@ -155,13 +159,18 @@ function postNewJobs(arr){
             console.log("post rejected: ", title, url);
         }
 		else{
-			console.log("letspost: ", title, url);
-			// r.getSubreddit('LawJobsSydney').submitLink({
-			//     title: title,
-			//     url: url
-			// });
+            console.log("letspost: ["+title+"]("+url+")");
+			// log += "\nletspost: ["+title+"]("+url+")";
+			r.getSubreddit('LawJobsSydney').submitLink({
+			    title: title,
+			    url: url
+			});
 		}
     }
 	console.log("runtime: ", (new Date().getTime() - runtime)/1000);
+	// log += "\n\n***************************\n\n"
+	// console.log(log);
+	// console.log("runtime: ", (new Date().getTime() - runtime)/1000);
+	// process.exit(); //can't quite before upload
 	return;
 }

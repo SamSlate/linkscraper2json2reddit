@@ -14,8 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jsdom": "^9.10.0",
-    "request": "^2.79.0",
-    "snoowrap": "^1.12.0"
+    "jsdom": "^9.11.0",
+    "snoowrap": "^1.12.0",
+    "string-hash": "^1.1.3"
   }
 }
