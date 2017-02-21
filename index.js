@@ -44,13 +44,12 @@ function getJson(name, url){
 	var readSpeed = new Date().getTime();
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
-		if(err && err.errno != -4058){
-			//unknown error
+		if(err && err.code != 'ENOENT'){ //unknown error
 			console.log(name, err);
-			throw err;
+			// throw err;
 			getPage({name: name, url: url, hash: null, linkArray: []});
 		}
-		if(err && err.errno == -4058){
+		if(err){
 			//file DNE
 			console.log(name+'.json is NEW .json');
 			getPage({name: name, url: url, hash: null, linkArray: []});
