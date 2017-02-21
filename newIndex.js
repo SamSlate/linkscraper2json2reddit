@@ -51,8 +51,8 @@ bluebird.map(urls, function getJson([name, url]) {
   
 })
 .then(_.flatten)
-.then(allRedditLinks => {
-  console.log('allRedditLinks.length', allRedditLinks.length);
+.then(allNewRedditLinks => {
+  console.log('allNewRedditLinks.length', allNewRedditLinks.length);
   //TODO: post these bad boys up to reddit
 })
 .catch(err => {
