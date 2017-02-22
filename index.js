@@ -62,7 +62,6 @@ function getJson(name, url){
 }
 //get page	
 function getPage(jsonObj){
-    var readSpeed = new Date().getTime();
 	var config = {
 		url: jsonObj.url,
 		done: function (err, window) {
@@ -96,6 +95,7 @@ function getPage(jsonObj){
 			compare(jsonNew, jsonObj);
 		}
 	};
+    var readSpeed = new Date().getTime();
 	jsdom.env(config); //go
 }
 //compare links
