@@ -124,7 +124,7 @@ function compare(jsonNew, jsonOld){
 		// } else return false;
 	}
 
-	jsonNew.linkArray.reverse(); //better length detction in reverse
+	jsonNew.linkArray.reverse(); //better lencth/description detection in reverse
 	var rArr = jsonNew.linkArray.filter(hasDup);
 	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
