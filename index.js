@@ -28,10 +28,7 @@ var log = "LOG: "+new Date();
 var i = 0;
 for(var n in urls){
 	// if(n == "Mills Oakley") getJson(n, urls[n]);	
-	// getJson(n, urls[n]);
-	sleep(500*i++).then((() => {
-		getJson(n, urls[n]);	
-	})(i));
+	getJson(n, urls[n]);
 }
 //sleep
 function sleep (time) {
@@ -44,21 +41,20 @@ function getJson(name, url){
 	var readSpeed = new Date().getTime();
 	//too async for this world
 	fs.readFile('json/'+name+'.json', 'utf8', function(err, data){
-		if(err && err.code != 'ENOENT'){ //unknown error
-			console.log(name, err);
-			// throw err;
+		if (err) {
+			if (err.code == 'ENOENT') {
+				console.log(name+'.json is NEW .json');
+			} else {
+				console.log('ERROR: ', name, err);
+			}
 			getPage({name: name, url: url, hash: null, linkArray: []});
 		}
-		if(err){
-			//file DNE
-			console.log(name+'.json is NEW .json');
-			getPage({name: name, url: url, hash: null, linkArray: []});
-		}
-		else{
+		if (data) {
 			//file EXISTS
 			console.log(name+'.json EXISTS');
-			// getPage(url, JSON.parse(data).linkArray, name, JSON.parse(data).hash);
 			getPage(JSON.parse(data));
+		} else {
+			console.log('Data is undefined for ', name, ' ', url);
 		}
 		console.log("  readSpeed: ", (new Date().getTime() - readSpeed)/1000);
 	});
