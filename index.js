@@ -84,15 +84,17 @@ function getPage(jsonObj){
 			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 
 			var linkArray = [];
-			var a = window.document.querySelectorAll('a');
-				a.forEach(function(el) {
-					linkArray.push({
-						href: el.href,
-						class: el.className,
-						text: el.textContent.replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
-						target: el.target
-					});
-				}, this);
+			if(jsonObj.hash!=newHash){
+				var a = window.document.querySelectorAll('a');
+					a.forEach(function(el) {
+						linkArray.push({
+							href: el.href,
+							class: el.className,
+							text: el.textContent.replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
+							target: el.target
+						});
+					}, this);
+			}
 			jsonNew.linkArray = linkArray;	
 			window.close();
 			compare(jsonNew, jsonObj);
@@ -107,13 +109,10 @@ function compare(jsonNew, jsonOld){
 	//compare and remove dups
 	// var kill = 11;
 	function hasDup(value) {
-		// for (var i = 0; i < jsonOld.linkArray.length; i++)	
-		// 	if(value.href == jsonOld.linkArray[i].href)
-		// 		if(value.text.length <= jsonOld.linkArray[i].text.length) return false;
-		for (var i = 0; i < jsonOld.linkArray.length; i++){			
+		for (var i = 0; i < jsonOld.linkArray.length; i++){
+			if(value.text == jsonOld.linkArray[i].text) return false;	
 			if(value.href == jsonOld.linkArray[i].href)
 				if(value.text.length <= jsonOld.linkArray[i].text.length) return false;
-			if(value.text == jsonOld.linkArray[i].text) return false;			
 		}
 		// if(--kill > 0){
 		jsonOld.linkArray.push(value);
@@ -125,6 +124,7 @@ function compare(jsonNew, jsonOld){
 		// } else return false;
 	}
 
+	jsonNew.linkArray.reverse(); //better length detction in reverse
 	var rArr = jsonNew.linkArray.filter(hasDup);
 	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
