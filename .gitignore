@@ -3,6 +3,7 @@ node_modules/
 .vscode
 *.json
 filesizeComparison.png
+log.txt
 desktop.ini
 !package.json
 !urls.json

@@ -102,13 +102,27 @@ function getPage(jsonObj){
 function compare(jsonNew, jsonOld){
 	if(!jsonOld.linkArray) console.log(jsonOld.name, "no old array!");
 
+	//update title (on href conflict)
+	function updateReturnArrTitle(h, t){
+		for (var i = 0; i < redditPostArray.length; i++)
+			if(h == redditPostArray[i].value.href){
+				redditPostArray[i].value.text = t;
+				return; //break
+			}
+	}
 	//compare and remove dups
 	// var kill = 11;
 	function hasDup(value) {
 		for (var i = 0; i < jsonOld.linkArray.length; i++){
 			if(value.text == jsonOld.linkArray[i].text) return false;	
-			if(value.href == jsonOld.linkArray[i].href)
-				if(value.text.length <= jsonOld.linkArray[i].text.length) return false;
+			if(value.href == jsonOld.linkArray[i].href){
+				if(value.text.length > (jsonOld.linkArray[i].text.length+2)){ //+2 spaces, idk where they come from
+					// console.log("    update rArr.text: "+jsonOld.linkArray[i].text+"->"+value.text);
+					updateReturnArrTitle(value.href, value.text);
+					jsonOld.linkArray[i].text = value.text;
+				}
+				return false;
+			}
 		}
 		// if(--kill > 0){
 		jsonOld.linkArray.push(value);
@@ -120,7 +134,7 @@ function compare(jsonNew, jsonOld){
 		// } else return false;
 	}
 
-	jsonNew.linkArray.reverse(); //better length/description detection in reverse
+	//jsonNew.linkArray.reverse(); //better length/description detection in reverse
 	var rArr = jsonNew.linkArray.filter(hasDup);
 	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
@@ -153,13 +167,10 @@ function postNewJobs(arr){
 		var title = "["+name+"] "+arr[i].value.text;
 		var url = arr[i].value.href;
 
-		if(title == undefined || (title.length-name.length) < 5 || !(url[0] == 'h' || url[0] == 'w')){
-            console.log("post rejected: ", title, url);
-        }
+		if(title == undefined || (title.length-name.length) < 5 || !(url[0] == 'h' || url[0] == 'w')) 
+			console.log("post rejected: ["+title+"]" + url);
 		else{
-            console.log("letspost: ["+title+"]("+url+")");
-			// log += "\nletspost: ["+title+"]("+url+")";
-			
+            console.log("letspost: ["+title+"]("+url+")");			
 			if(process.argv[2] == 'r'){
 				console.log(process.argv[2]);
 				r.getSubreddit('LawJobsSydney').submitLink({
@@ -170,9 +181,5 @@ function postNewJobs(arr){
 		}
     }
 	console.log("runtime: ", (new Date().getTime() - runtime)/1000);
-	// log += "\n\n***************************\n\n"
-	// console.log(log);
-	// console.log("runtime: ", (new Date().getTime() - runtime)/1000);
-	// process.exit(); //can't quite before upload
 	return;
 }
