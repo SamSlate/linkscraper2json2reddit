@@ -68,7 +68,7 @@ function getPage(jsonObj){
 		done: function (err, window) {
 			var jsonNew = Object.assign({}, jsonObj);
 				jsonNew.linkArray = [];
-			console.log(jsonObj.name, "  requestSpeed: ", (new Date().getTime() - readSpeed)/1000, ((new Date().getTime() - runtime)/1000)-((new Date().getTime() - readSpeed)/1000));
+			console.log(jsonObj.name, "\n  requestSpeed: ", (new Date().getTime() - readSpeed)/1000, ((new Date().getTime() - runtime)/1000)-((new Date().getTime() - readSpeed)/1000));
 			if (err) { //error
 				console.log(err);
 				countIt();
