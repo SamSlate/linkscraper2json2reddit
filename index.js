@@ -62,40 +62,42 @@ function getJson(name, url){
 }
 //get page	
 function getPage(jsonObj){
+	var readSpeed = new Date().getTime();
 	var config = {
 		url: jsonObj.url,
 		done: function (err, window) {
 			var jsonNew = Object.assign({}, jsonObj);
 				jsonNew.linkArray = [];
+			console.log(jsonObj.name, "  requestSpeed: ", (new Date().getTime() - readSpeed)/1000, ((new Date().getTime() - runtime)/1000)-((new Date().getTime() - readSpeed)/1000));
 			if (err) { //error
 				console.log(err);
-				console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
-				compare(jsonNew, jsonObj);
+				countIt();
 				return;
 			}			
-			var newHash = hash(this.html);
-				jsonNew.hash = newHash;				
-			console.log(jsonObj.name, "\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
-			console.log("  requestSpeed: ", (new Date().getTime() - readSpeed)/1000);
 
 			var linkArray = [];
-			if(jsonObj.hash!=newHash){
-				var a = window.document.querySelectorAll('a');
-					a.forEach(function(el) {
-						linkArray.push({
-							href: el.href,
-							class: el.className,
-							text: el.textContent.replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
-							target: el.target
-						});
-					}, this);
-			}
-			jsonNew.linkArray = linkArray;	
+			var a = window.document.querySelectorAll('a');
+				a.forEach(function(el) {
+					linkArray.push({
+						href: el.href,
+						class: el.className,
+						text: el.textContent.replace(/[^a-z&A-Z0-9 -]/g," ").replace(/\s\s+/g, ' '),
+						target: el.target
+					});
+				}, this);
 			window.close();
+
+			var newHash = hash(linkArray.join());		
+			console.log("  "+linkArray.length, " links found\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
+			if(jsonObj.hash==newHash){				
+				countIt();
+				return;
+			}
+			jsonNew.linkArray = linkArray;
+			jsonNew.hash = newHash;		
 			compare(jsonNew, jsonObj);
 		}
 	};
-    var readSpeed = new Date().getTime();
 	jsdom.env(config); //go
 }
 //compare links
@@ -139,24 +141,24 @@ function compare(jsonNew, jsonOld){
 	console.log(jsonOld.name, "compare()\n ", jsonNew.linkArray.length, "links found, ", rArr.length, "new! (", jsonOld.linkArray.length, "total )");
 	
 	//update existing array;
-	if(rArr.length > 0){
-		jsonOld.hash = jsonNew.hash; //new content => new hash
-		var readSpeed = new Date().getTime();
-		fs.writeFileSync('json/'+jsonOld.name+'.json', JSON.stringify(jsonOld));
-			console.log(jsonOld.name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
+	// if(rArr.length > 0){
+	jsonOld.hash = jsonNew.hash; //new content => new hash
+	var readSpeed = new Date().getTime();
+	fs.writeFileSync('json/'+jsonOld.name+'.json', JSON.stringify(jsonOld));
+		console.log(jsonOld.name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
 			// log += jsonOld.name+'.json UPDATED\n  writeSpeed: '+(new Date().getTime() - readSpeed)/1000+"\n  runtime: "+(new Date().getTime() - runtime)/1000;
-	}
-	else{
-		console.log(jsonOld.name, "no changes, nothing to update");
-		console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
-		// log += jsonOld.name + "no changes, nothing to update\n  runtime: "+(new Date().getTime() - runtime)/1000;
-	}
-	count--;
-	console.log("  "+count+" open calls, "+redditPostArray.length+" new posts");
-	if(count==0){ //post array to reddit
-		postNewJobs(redditPostArray);
-	}
+	countIt();
+	// }
+	// else{
+	// 	console.log(jsonOld.name, "no changes, nothing to update");
+	// 	console.log("  runtime: ", (new Date().getTime() - runtime)/1000);
+	// 	// log += jsonOld.name + "no changes, nothing to update\n  runtime: "+(new Date().getTime() - runtime)/1000;
+	// }
 	return;
+}
+function countIt(){
+	console.log((--count)+" open calls, "+redditPostArray.length+" new posts");
+	if(count==0) postNewJobs(redditPostArray);
 }
 //post to reddit:
 function postNewJobs(arr){
