@@ -1,4 +1,4 @@
-console.log("LOG: "+new Date());
+console.log("LOG v1: "+new Date());
 
 //option to post to reddit 'r'?yes:no
 console.log("post to reddit", process.argv[2] == 'r');
