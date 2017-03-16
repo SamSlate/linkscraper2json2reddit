@@ -172,7 +172,7 @@ function compare(jsonNew, jsonOld){
 function countIt(){
 	console.log((--count)+" open calls, "+redditPostArray.length+" new posts");
 	if(count==0) postNewJobs(redditPostArray);
-}
+} 
 //post to reddit:
 function postNewJobs(arr){
 	if(!arr) return;   
