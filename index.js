@@ -15,7 +15,8 @@ var r = new snoowrap(snooConfig);
 
 //url list
 var urls = JSON.parse(fs.readFileSync('config/urls.json', 'utf8'));
-	console.log("last url add: ", urls[urls.length-1]);
+	var lastAdd = "Macpherson Kelley";
+	console.log("last url add: ", lastAdd, urls[lastAdd]);
 
 //clock
 var runtime = new Date().getTime();
