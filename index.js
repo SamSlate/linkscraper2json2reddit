@@ -25,6 +25,7 @@ var runtime = new Date().getTime();
 var redditPostArray = [];
 var count = Object.keys(urls).length;
 var log = "LOG: "+new Date();
+var minTextLength = 5;
 
 //list urls
 var i = 0;
@@ -79,7 +80,7 @@ function getPage(jsonObj){
 
 			var linkArray = [];
 			var a = window.document.querySelectorAll('a');
-				a.forEach(function(el) {
+				a.forEach(function(el) {					
 					linkArray.push({
 						href: el.href,
 						class: el.className,
@@ -118,8 +119,17 @@ function compare(jsonNew, jsonOld){
 	// var kill = 11;
 	function hasDup(value) {
 		for (var i = 0; i < jsonOld.linkArray.length; i++){
-			if(value.text == jsonOld.linkArray[i].text) return false;	
+			if(value.text == jsonOld.linkArray[i].text && value.text.length >= minTextLength){
+				// if(value.href.indexOf("selectJob")>0)
+				// 		console.log("reject A: ", value, value.text != "", "`"+value.text+"`");
+				return false;					
+			}
+				
 			if(value.href == jsonOld.linkArray[i].href){
+
+				if(value.href.indexOf("selectJob")>0)
+						console.log("reject B: ", value.href);
+
 				if(value.text.length > (jsonOld.linkArray[i].text.length+2)){ //+2 spaces, idk where they come from
 					// console.log("    update rArr.text: "+jsonOld.linkArray[i].text+"->"+value.text);
 					updateReturnArrTitle(value.href, value.text);
@@ -134,6 +144,7 @@ function compare(jsonNew, jsonOld){
 			name: jsonOld.name,
 			value: value
 		});
+
 		return true; 
 		// } else return false;
 	}
@@ -171,10 +182,16 @@ function postNewJobs(arr){
 		var title = "["+name+"] "+arr[i].value.text;
 		var url = arr[i].value.href;
 
-		if(title == undefined || (title.length-name.length) < 5 || !(url[0] == 'h' || url[0] == 'w')) 
+		
+		if((title.length-name.length) <= minTextLength){
+			title += "(Couldn't Scrape Title, class: '"+arr[i].value.class+"')";
+		}
+		
+		if(title == undefined || url[0] == 'j' || !(url[0] == 'h' || url[0] == 'w')){
 			console.log("post rejected: ["+title+"]" + url);
+		}
 		else{
-            console.log("letspost: ["+title+"]("+url+")");			
+            console.log("letspost: ["+title+"]("+url+")");
 			if(process.argv[2] == 'r'){
 				console.log(process.argv[2]);
 				r.getSubreddit('LawJobsSydney').submitLink({
