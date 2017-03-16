@@ -1,4 +1,4 @@
-console.log("LOG v1: "+new Date());
+console.log("LOG v2: "+new Date());
 
 //option to post to reddit 'r'?yes:no
 console.log("post to reddit", process.argv[2] == 'r');
@@ -15,6 +15,7 @@ var r = new snoowrap(snooConfig);
 
 //url list
 var urls = JSON.parse(fs.readFileSync('config/urls.json', 'utf8'));
+	console.log("last url add: ", urls[urls.length-1]);
 
 //clock
 var runtime = new Date().getTime();
