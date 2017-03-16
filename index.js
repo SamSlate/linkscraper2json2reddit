@@ -26,6 +26,7 @@ var redditPostArray = [];
 var count = Object.keys(urls).length;
 var log = "LOG: "+new Date();
 var minTextLength = 5;
+var modifyHash = "B"; //change to update all jsonfiles
 
 //list urls
 var i = 0;
@@ -52,12 +53,12 @@ function getJson(name, url){
 			}
 			getPage({name: name, url: url, hash: null, linkArray: []});
 		}
-		if (data) {
+		else if (data) {
 			//file EXISTS
 			console.log(name+'.json EXISTS');
 			getPage(JSON.parse(data));
 		} else {
-			console.log('Data is undefined for ', name, ' ', url);
+			console.log('Data is undefined for ', name, ' ', url, "\n\tnew?");
 		}
 		console.log("  readSpeed: ", (new Date().getTime() - readSpeed)/1000);
 	});
@@ -90,7 +91,7 @@ function getPage(jsonObj){
 				}, this);
 			window.close();
 
-			var newHash = hash(linkArray.join());		
+			var newHash = hash(linkArray.join()+modifyHash);		
 			console.log("  "+linkArray.length, " links found\n  hash: ", newHash, jsonObj.hash, jsonObj.hash==newHash);
 			if(jsonObj.hash==newHash){				
 				countIt();
@@ -119,17 +120,14 @@ function compare(jsonNew, jsonOld){
 	// var kill = 11;
 	function hasDup(value) {
 		for (var i = 0; i < jsonOld.linkArray.length; i++){
-			if(value.text == jsonOld.linkArray[i].text && value.text.length >= minTextLength){
-				// if(value.href.indexOf("selectJob")>0)
-				// 		console.log("reject A: ", value, value.text != "", "`"+value.text+"`");
+			// if(value.text == jsonOld.linkArray[i].text && value.text.length >= minTextLength){
+			// if(value.text == jsonOld.linkArray[i].text && jsonOld.name != "Macpherson Kelley"){
+			if(value.text == jsonOld.linkArray[i].text){
+				// if(value.href.indexOf("selectJob")>0) console.log("reject A: ", value, value.text != "", "`"+value.text+"`");
 				return false;					
 			}
 				
 			if(value.href == jsonOld.linkArray[i].href){
-
-				if(value.href.indexOf("selectJob")>0)
-						console.log("reject B: ", value.href);
-
 				if(value.text.length > (jsonOld.linkArray[i].text.length+2)){ //+2 spaces, idk where they come from
 					// console.log("    update rArr.text: "+jsonOld.linkArray[i].text+"->"+value.text);
 					updateReturnArrTitle(value.href, value.text);
@@ -157,7 +155,7 @@ function compare(jsonNew, jsonOld){
 	// if(rArr.length > 0){
 	jsonOld.hash = jsonNew.hash; //new content => new hash
 	var readSpeed = new Date().getTime();
-	fs.writeFileSync('json/'+jsonOld.name+'.json', JSON.stringify(jsonOld));
+	fs.writeFileSync('json/'+jsonOld.name+'.json', JSON.stringify(jsonOld, null, "\t"));
 		console.log(jsonOld.name+'.json UPDATED\n  writeSpeed: ', (new Date().getTime() - readSpeed)/1000,"\n  runtime: ", (new Date().getTime() - runtime)/1000);
 			// log += jsonOld.name+'.json UPDATED\n  writeSpeed: '+(new Date().getTime() - readSpeed)/1000+"\n  runtime: "+(new Date().getTime() - runtime)/1000;
 	countIt();
