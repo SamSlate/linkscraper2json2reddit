@@ -14,7 +14,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.4.7",
+    "cheerio": "^0.22.0",
     "jsdom": "^9.11.0",
+    "lodash": "^4.17.4",
+    "request": "^2.79.0",
     "snoowrap": "^1.12.0",
     "string-hash": "^1.1.3"
   }
